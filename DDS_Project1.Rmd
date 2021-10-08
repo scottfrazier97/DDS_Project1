@@ -1,0 +1,66 @@
+---
+title: "BudweiserCaseStudy"
+author: "Kevin Boyd"
+date: "10/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Budweiser Case Study
+## 
+
+### Load Libraries
+```{r}
+library(tidyverse)
+library(GGally)
+```
+
+### Load in the data
+```{r}
+beers <- read.csv("beers.csv", header = T)
+breweries <- read.csv("breweries.csv", header = T)
+```
+
+
+### Look at the data
+```{r}
+str(beers)
+str(breweries)
+head(beers)
+head(breweries)
+```
+
+
+### How many NAs 
+```{r}
+sum(is.na(beers$ABV))
+sum(is.na(beers$IBU))
+```
+
+
+### How many breweries in each state
+```{r}
+ggplot(breweries, aes(x=State)) +
+  geom_bar(fill="blue") +
+  theme(axis.text.x=element_text(angle=90)) +
+  ggtitle("Number of Breweries by State") +
+  xlab("State") +
+  ylab("Count")
+```
+
+
+### Chage column name and merge
+```{r}
+names(breweries)[1] <- "Brewery_id"
+df1 <- merge(beers, breweries, by = "Brewery_id", all = T)
+```
+
+
+### Median ABV and IBU by state
+```{r}
+test <- na.omit(beers$ABV)
+test1 <- median(test)
+```
