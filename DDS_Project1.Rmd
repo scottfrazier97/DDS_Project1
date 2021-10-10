@@ -40,7 +40,7 @@ head(breweries)
 Number 1
 ```{r}
 #ordered plot
-breweries %>%
+brewbystate <- breweries %>%
   group_by(State) %>%
   summarise(count = n()) %>%
   ggplot(aes(x=reorder(State,(-count)), y = count)) +
@@ -49,6 +49,7 @@ breweries %>%
   ggtitle("Number of Breweries by State") +
   xlab("State") +
   ylab("Count")
+brewbystate + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
@@ -133,7 +134,7 @@ ABV_Values <- df1 %>% group_by(State) %>%
   ggtitle("Median ABV Values by State") +
   xlab("State") +
   ylab("Median ABV Value")
-ABV_Values
+ABV_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
@@ -147,7 +148,7 @@ IBU_Values <- df1 %>% group_by(State) %>%
   ggtitle("Median IBU Values by State") +
   xlab("State") +
   ylab("Median IBU Value")
-IBU_Values
+IBU_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
