@@ -152,7 +152,8 @@ IBU_Values
 
 
 ### Maximum ABV and IBU
-Number 5
+#### Number 5
+##### Colorado has the highest ABV beer and Oregon has the highest IBU beer
 ```{r}
 #make data frames with top 5 
 df2 <- df1[order(df1$ABV,decreasing = T),]
@@ -187,7 +188,8 @@ ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) +
 
 
 ### Distribution of ABV
-Number 6
+#### Number 6
+#####  The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.
 ```{r}
 #Summary stats of ABV
 summary(df1$ABV)
@@ -214,7 +216,8 @@ ABV_vizz + geom_density(fill = "#377eb8", alpha=0.6) +
 
 
 ### Relationship between ABV and IBU
-Number 7
+#### Number 7
+##### There appears to be a positive relationship between ABV and IBU. As the ABV increases the IBU also tends to increase. We also notice that a majority of the data points are at 0.05 ABV and 35 IBU
 ```{r}
 ggplot(df1, aes(x=ABV, y=IBU)) +
   geom_point() +
