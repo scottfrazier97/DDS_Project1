@@ -97,21 +97,21 @@ NA.column <- ggplot(NA.df1, aes(x=Measure, y=Value)) +
 
 #make a pie chart for ABV
 NA.df2 <- data.frame(Measure = c("ABV","ABV"), 
-                     Data = c("NAs","Total"),
+                     Data = c("Missing","Total"),
                      Value = c(ABV_NAs,(DataLength-ABV_NAs)))
 
 bp1 <- ggplot(NA.df2, aes(x="", y=Value, fill=Data)) +
-geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Proportion Missing ABV Data")
+geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing ABV Data")
 pie1 <- bp1 + coord_polar("y", start=0)
 pie1
 
 #make pie chart for IBU
 NA.df3 <- data.frame(Measure = c("IBU","IBU"), 
-                     Data = c("NAs","Total"),
+                     Data = c("Missing","Total"),
                      Value = c(IBU_NAs,(DataLength - IBU_NAs)))
 
 bp2 <- ggplot(NA.df3, aes(x="", y=Value, fill=Data)) +
-geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Proportion Missing IBU Data")
+geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing IBU Data")
 pie2 <- bp2 + coord_polar("y", start=0)
 pie2
 
