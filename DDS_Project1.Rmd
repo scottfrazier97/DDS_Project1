@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Load Libraries
 ```{r, message=F}
 library(tidyverse)
-library(GGally)
 library(RColorBrewer)
 library(cowplot)
 ```
@@ -37,18 +36,6 @@ head(breweries)
 ```
 
 
-### Merge datasets
-```{r}
-#merge data sets on Brewery_id
-names(breweries)[1] <- "Brewery_id"
-df1 <- merge(beers, breweries, by = "Brewery_id", all = T)
-names(df1)[2] <- "Beer"
-names(df1)[8] <- "Brewery"
-str(df1)
-head(df1)
-```
-
-
 ### How many breweries in each state
 Number 1
 ```{r}
@@ -62,6 +49,20 @@ breweries %>%
   ggtitle("Number of Breweries by State") +
   xlab("State") +
   ylab("Count")
+```
+
+
+### Merge datasets
+Number 2
+```{r}
+#merge data sets on Brewery_id
+names(breweries)[1] <- "Brewery_id"
+df1 <- merge(beers, breweries, by = "Brewery_id", all = T)
+names(df1)[2] <- "Beer"
+names(df1)[8] <- "Brewery"
+str(df1)
+head(df1)
+tail(df1)
 ```
 
 
