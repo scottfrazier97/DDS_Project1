@@ -1,6 +1,6 @@
 ---
-title: "BudweiserCaseStudy"
-author: "Kevin Boyd"
+title: "Budweiser Case Study"
+author: "Kevin Boyd & Scott Frazier"
 date: "10/6/2021"
 output: html_document
 ---
@@ -10,13 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Budweiser Case Study
-## 
+
 
 ### Load Libraries
-```{r}
+```{r, message=F}
 library(tidyverse)
 library(GGally)
+library(RColorBrewer)
+library(cowplot)
 ```
+
 
 ### Load in the data
 ```{r}
@@ -34,17 +37,27 @@ head(breweries)
 ```
 
 
-### How many NAs 
+### Merge datasets
 ```{r}
-sum(is.na(beers$ABV))
-sum(is.na(beers$IBU))
+#merge data sets on Brewery_id
+names(breweries)[1] <- "Brewery_id"
+df1 <- merge(beers, breweries, by = "Brewery_id", all = T)
+names(df1)[2] <- "Beer"
+names(df1)[8] <- "Brewery"
+str(df1)
+head(df1)
 ```
 
 
 ### How many breweries in each state
+Number 1
 ```{r}
-ggplot(breweries, aes(x=State)) +
-  geom_bar(fill="blue") +
+#ordered plot
+breweries %>%
+  group_by(State) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x=reorder(State,(-count)), y = count)) +
+  geom_bar(stat = "identity",fill="blue") +
   theme(axis.text.x=element_text(angle=90)) +
   ggtitle("Number of Breweries by State") +
   xlab("State") +
@@ -52,15 +65,164 @@ ggplot(breweries, aes(x=State)) +
 ```
 
 
-### Chage column name and merge
+### How many NAs
+Number 3
 ```{r}
-names(breweries)[1] <- "Brewery_id"
-df1 <- merge(beers, breweries, by = "Brewery_id", all = T)
+#number of NAs in each data set
+Beers_NAs <- sum(is.na(beers))
+Brewery_NAs <- sum(is.na(breweries))
+NA.df <- data.frame(Measure = c("Beers Data", "Breweries Data"), 
+                                Value = c(Beers_NAs,Brewery_NAs))
+NA.dataset <- ggplot(NA.df, aes(x=Measure, y=Value)) +
+  geom_bar(stat = "identity", fill = "red3") +
+  ggtitle("Missing Data in each Dataset") +
+  xlab("Dataset") +
+  ylab("Number of NAs")
+
+#which rows are the NAs coming from?
+ABV_NAs <- sum(is.na(beers$ABV))
+IBU_NAs <- sum(is.na(beers$IBU))
+DataLength <- NROW(beers$ABV)
+
+#make data frame from number of NAs
+NA.df1 <- data.frame(Measure = c("ABV","IBU"),
+                     Value = c(ABV_NAs,IBU_NAs))
+
+#plot the NA values from each column
+NA.column <- ggplot(NA.df1, aes(x=Measure, y=Value)) +
+  geom_bar(stat = "identity", fill = "purple2") +
+  ggtitle("Missing Data for ABV and IBU") +
+  ylab("Number of NAs") +
+  xlab("Column in Dataset")
+
+#make a pie chart for ABV
+NA.df2 <- data.frame(Measure = c("ABV","ABV"), 
+                     Data = c("NAs","Total"),
+                     Value = c(ABV_NAs,(DataLength-ABV_NAs)))
+
+bp1 <- ggplot(NA.df2, aes(x="", y=Value, fill=Data)) +
+geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Proportion Missing ABV Data")
+pie1 <- bp1 + coord_polar("y", start=0)
+pie1
+
+#make pie chart for IBU
+NA.df3 <- data.frame(Measure = c("IBU","IBU"), 
+                     Data = c("NAs","Total"),
+                     Value = c(IBU_NAs,(DataLength - IBU_NAs)))
+
+bp2 <- ggplot(NA.df3, aes(x="", y=Value, fill=Data)) +
+geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Proportion Missing IBU Data")
+pie2 <- bp2 + coord_polar("y", start=0)
+pie2
+
+#put all the plots together
+NAplots <- plot_grid(NA.dataset,NA.column,pie1,pie2, labels = c("A","B","C","D"))
+NAplots
 ```
 
 
-### Median ABV and IBU by state
+### Median ABV by State
+Number 4
 ```{r}
-test <- na.omit(beers$ABV)
-test1 <- median(test)
+ABV_Values <- df1 %>% group_by(State) %>%
+  summarize(medianABV = median(ABV, na.rm = T)) %>%
+  ggplot(aes(x=reorder(State,(-medianABV)), y=medianABV)) +
+  geom_bar(stat = "identity", fill="#377eb8") +
+  theme(axis.text.x=element_text(angle=90)) +
+  ggtitle("Median ABV Values by State") +
+  xlab("State") +
+  ylab("Median ABV Value")
+ABV_Values
 ```
+
+
+### Median IBU by State
+```{r}
+IBU_Values <- df1 %>% group_by(State) %>%
+  summarize(medianIBU = median(IBU, na.rm = T)) %>%
+  ggplot(aes(x=reorder(State,(-medianIBU)), y=medianIBU)) +
+  geom_bar(stat = "identity", fill="#4daf4a") +
+  theme(axis.text.x=element_text(angle=90)) +
+  ggtitle("Median IBU Values by State") +
+  xlab("State") +
+  ylab("Median IBU Value")
+IBU_Values
+```
+
+
+### Maximum ABV and IBU
+Number 5
+```{r}
+#make data frames with top 5 
+df2 <- df1[order(df1$ABV,decreasing = T),]
+df2 <- df2[c(1,2,3,5,6),c(4,10)]
+df3 <- df1[order(df1$IBU,decreasing = T),]
+df3 <- df3[c(1:5),c(5,10)]
+```
+
+### Top 5 States with Highest IBU
+```{r}
+#plot the top 5 states for IBU
+ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + 
+  geom_bar(stat = "identity", fill = "#4daf4a") +
+  ylim(0,150) +
+  ggtitle("Top 5 States IBU") +
+  xlab("State") +
+  geom_text(aes(label=IBU), vjust=-1) +
+  ylab("IBU (International Bitterness Units)")
+```
+
+### Top 5 States with Highest ABV
+```{r}
+#plot the top states for ABV
+ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + 
+  geom_bar(stat = "identity", fill= "#377eb8") +
+  ylim(0,0.15) +
+  ggtitle("Top 5 States ABV") +
+  xlab("State") +
+  geom_text(aes(label=ABV), vjust=-1) +
+  ylab("ABV (Alcohol by Volume)")
+```
+
+
+### Distribution of ABV
+Number 6
+```{r}
+#Summary stats of ABV
+summary(df1$ABV)
+
+###Distributions
+#Histogram of ABV in df1 - looks decent
+df1 %>% ggplot(aes(x=ABV)) + geom_histogram(fill = "#377eb8") + ggtitle("Different ABV Values of Beer") + labs(x="ABV (Alcohol by Volume)", y="Frequency")
+
+#boxplot - might need some work
+df1 %>% ggplot(aes(x=ABV)) + geom_boxplot(fill = "#377eb8") + ggtitle("Different ABV Values of Beer") + labs(x="ABV (Alcohol by Volume)", y="") + coord_flip()
+
+
+#geom_density - looks decent
+ABV_vizz = ggplot(df1, aes(x = ABV))
+
+ABV_vizz + geom_density(fill = "#377eb8", alpha=0.6) +
+  geom_vline(aes(xintercept = mean(ABV)), 
+             linetype = "dashed", size = 0.6,
+             color = "#FC4E07") +
+  ylab("Frequency") +
+  ggtitle("Different ABV Values of Beer") +
+  xlab("ABV (Alcohol by Volume)")
+```
+
+
+### Relationship between ABV and IBU
+Number 7
+```{r}
+ggplot(df1, aes(x=ABV, y=IBU)) +
+  geom_point() +
+  geom_jitter() +
+  geom_smooth() +
+  ggtitle("Relationship Between ABV vs IBU")
+```
+
+
+
+
+
