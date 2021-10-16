@@ -17,6 +17,10 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(RColorBrewer)
 library(cowplot)
+library(class)
+library(caret)
+library(e1071)
+library(stringr)
 ```
 
 
@@ -228,6 +232,125 @@ ggplot(df1, aes(x=ABV, y=IBU)) +
 ```
 
 
+### KNN Model
+#### Number 8
+```{r}
+#Make new column with ALE, IPA, or Other as identifier
+df1$Type = ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
+  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA", "Other"))
+head(df1)
+
+#Make new data frame with only Ale beers
+aleIPA <- df1 %>% filter(df1$Type == "ALE" | df1$Type == "IPA")
+head(aleIPA)
+
+#Make training and test data frames
+splitPerc <- .7
+trainIndices <- sample(1:dim(aleIPA)[1],round(splitPerc * dim(aleIPA)[1]))
+dfTrain <- aleIPA[trainIndices,]
+dfTest <- aleIPA[-trainIndices,]
+
+#Omit the NAs
+dfTrain <- na.omit(dfTrain)
+dfTest <- na.omit(dfTest)
+
+#knn model
+classifications <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 5, prob = TRUE)
+table(dfTest$Type,classifications)
+confusionMatrix(table(dfTest$Type,classifications))
+
+#knn internal model
+classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
+confusionMatrix(table(classifications1,dfTrain$Type))
+```
+
+### Loop for many k and the average of many training / test partition
+```{r}
+iterations = 100
+numks = 100
+
+masterAcc = matrix(nrow = iterations, ncol = numks)
+  
+for(j in 1:iterations)
+{
+accs = data.frame(accuracy = numeric(100), k = numeric(100))
+trainIndices = sample(1:dim(aleIPA)[1],round(splitPerc * dim(aleIPA)[1]))
+train = aleIPA[trainIndices,]
+test = aleIPA[-trainIndices,]
+for(i in 1:numks)
+{
+  classifications = knn(train[,c(1,3)],test[,c(1,3)],train$Type, prob = TRUE, k = i)
+  table(classifications,test$Type)
+  CM = confusionMatrix(table(classifications,test$Type))
+  masterAcc[j,i] = CM$overall[1]
+}
+
+}
+
+MeanAcc = colMeans(masterAcc)
+
+plot(seq(1,numks,1),MeanAcc, type = "l", xlab = "k", ylab = "Mean Accuracy", main = "Mean Accuracy of k Values")
+```
+
+```{r}
+#knn internal model for ABV and IBU
+classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
+confusionMatrix(table(classifications1,dfTrain$Type))
+
+#knn model for ABV
+classifications2 <- knn.cv(dfTrain[,4],dfTrain$Type, k = 10)
+confusionMatrix(table(classifications2,dfTrain$Type))
+
+#knn model for IBU
+classifications3 <- knn.cv(dfTrain[,5],dfTrain$Type, k = 10)
+confusionMatrix(table(classifications3,dfTrain$Type))
+```
 
 
+```{r}
+df1$New <- ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
+  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA",
+         ifelse(grepl("\\bWheat\\b", df1$Style, ignore.case = T), "Wheat",
+                ifelse(grepl("\\bAmber\\b", df1$Style, ignore.case = T), "Amber",
+                       ifelse(grepl("\\bStout\\b", df1$ Style, ignore.case = T), "Stout",
+                              ifelse(grepl("\\bLager\\b", df1$Style, ignore.case = T), "Lager",
+                                     ifelse(grepl("\\bPorter\\b", df1$Style, ignore.case = T), "Porter",
+                                            ifelse(grepl("\\bPilsner\\b", df1$Style, ignore.case = T), "Pilsner",
+                                                   "Other"))))))))
+head(df1)
+df1$New <- as.factor(df1$New)
+str(df1)
+```
 
+```{r}
+ggplot(df1, aes(x=ABV, y=IBU, color=New)) +
+  geom_point() +
+  geom_jitter() +
+  geom_smooth(color="black") +
+  ggtitle("Relationship Between ABV vs IBU") +
+  facet_wrap(~New)
+```
+
+```{r}
+p1 <- ggplot(df1, aes(x=New, y=ABV, fill=New)) +
+  geom_boxplot() +
+  ggtitle("Relationship Between Kind of Beer and ABV") +
+  xlab("Type of Beer") + 
+  theme(legend.position="none")
+p1
+```
+
+
+```{r}
+p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
+  geom_boxplot() +
+  ggtitle("Relationship Between Kind of Beer and IBU") +
+  xlab("Type of Beer") + 
+  theme(legend.position="none")
+p2
+```
+
+```{r}
+ABV_IBU <- plot_grid(p1,p2, labels = c("A","B"))
+ABV_IBU
+```
