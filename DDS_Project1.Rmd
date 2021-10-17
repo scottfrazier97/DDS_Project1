@@ -21,6 +21,8 @@ library(class)
 library(caret)
 library(e1071)
 library(stringr)
+library(maps)
+library(mapproj)
 ```
 
 
@@ -351,6 +353,50 @@ p2
 ```
 
 ```{r}
-ABV_IBU <- plot_grid(p1,p2, labels = c("A","B"))
+ABV_IBU <- plot_grid(p1,p2, labels = c("A","B"), nrow = 2)
 ABV_IBU
 ```
+
+### Median ABV and IBU by State
+```{r}
+#make the data frame to plot
+df3.ABV <- df1 %>% group_by(State) %>%
+  summarize(medianABV = median(ABV, na.rm = T))
+
+df3.IBU <- df1 %>% group_by(State) %>%
+  summarize(medianIBU = median(IBU, na.rm = T))
+
+df4 <- cbind(df3.ABV,df3.IBU)
+df4 <- df4[,-3]
+colnames(df4)[1] <- "abb"
+df4 <- df4[-8,]
+lookup = data.frame(abb = state.abb, State = state.name)
+df5 <- lookup[order(lookup$abb),]
+df6 <- cbind(df4,df5)
+df6$region <- tolower(df6$State)
+df7 <- df6[,-c(1,4,5)]
+
+states <- map_data("state")
+map.df1 <- merge(states,df7, by="region", all.x=T)
+map.df1 <- map.df1[order(map.df1$order),]
+```
+
+```{r}
+#ABV plot
+ggplot(map.df1, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=medianABV))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median ABV by State")+
+  coord_map()
+```
+
+```{r}
+#IBU plot
+ggplot(map.df1, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=medianIBU))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median IBU by State")+
+  coord_map()
+```
+
+
