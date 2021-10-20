@@ -42,7 +42,7 @@ head(breweries)
 ```
 
 
-### Number 1 - How many breweries in each state
+### Number 1 - How many breweries in each state?
 ```{r}
 #ordered plot
 brewbystate <- breweries %>%
@@ -71,7 +71,7 @@ tail(df1)
 ```
 
 
-### Number 3 - How many NAs
+### Number 3 - How many NAs and where they are
 ```{r}
 #number of NAs in each data set
 Beers_NAs <- sum(is.na(beers))
@@ -164,7 +164,7 @@ df3 <- df1[order(df1$IBU,decreasing = T),]
 df3 <- df3[c(1:5),c(5,10)]
 ```
 
-### Top 5 States with Highest IBU
+### Number 5 - Top 5 States with Highest IBU
 ```{r}
 #plot the top 5 states for IBU
 ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + 
@@ -176,7 +176,7 @@ ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) +
   ylab("IBU (International Bitterness Units)")
 ```
 
-### Top 5 States with Highest ABV
+### Number 5 - Top 5 States with Highest ABV
 ```{r}
 #plot the top states for ABV
 ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + 
@@ -258,7 +258,7 @@ classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
 confusionMatrix(table(classifications1,dfTrain$Type))
 ```
 
-### Loop for many k and the average of many training / test partition
+### Number 8 - Loop for many k and the average of many training / test partition
 ```{r}
 iterations = 100
 numks = 50
@@ -288,6 +288,15 @@ MeanAcc = colMeans(masterAcc)
 plot(seq(1,numks,1),MeanAcc, type = "l", xlab = "k", ylab = "Mean Accuracy", main = "Mean Accuracy of k Values")
 ```
 
+### Number 8 - KNN model using best k value
+```{r}
+classifications4 <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 6, prob = TRUE)
+table(dfTest$Type,classifications4)
+confusionMatrix(table(dfTest$Type,classifications4))
+```
+
+
+### Test models using ABV & IBU individually and together
 ```{r}
 #knn internal model for ABV and IBU
 classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
@@ -302,8 +311,10 @@ classifications3 <- knn.cv(dfTrain[,5],dfTrain$Type, k = 10)
 confusionMatrix(table(classifications3,dfTrain$Type))
 ```
 
+
 ### Number 9 - Find any interesting relationships in the data
 ```{r}
+# make new column with beer identifiers and make into a factor
 df1$New <- ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
   ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA",
          ifelse(grepl("\\bWheat\\b", df1$Style, ignore.case = T), "Wheat",
@@ -337,7 +348,6 @@ p1 <- ggplot(df1, aes(x=New, y=ABV, fill=New)) +
 p1
 ```
 
-
 ```{r}
 p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
   geom_boxplot() +
@@ -347,10 +357,6 @@ p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
 p2
 ```
 
-```{r}
-ABV_IBU <- plot_grid(p1,p2, labels = c("A","B"), nrow = 2)
-ABV_IBU
-```
 
 ### Median ABV and IBU by State
 ```{r}
@@ -381,7 +387,9 @@ map.df1 <- map.df1[order(map.df1$order),]
 ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   geom_polygon(aes(fill=medianABV)) +
   geom_path() + 
-  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median ABV by State") +
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Median ABV by State") +
+  labs(fill="Median ABV") +
   coord_map()
 ```
 
@@ -390,7 +398,9 @@ ggplot(map.df1, aes(x=long,y=lat,group=group)) +
 ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   geom_polygon(aes(fill=medianIBU)) +
   geom_path() + 
-  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median IBU by State") +
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Median IBU by State") +
+  labs(fill="Median IBU") +
   coord_map()
 ```
 
