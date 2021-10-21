@@ -42,8 +42,7 @@ head(breweries)
 ```
 
 
-### How many breweries in each state
-Number 1
+### Number 1 - How many breweries in each state?
 ```{r}
 #ordered plot
 brewbystate <- breweries %>%
@@ -59,8 +58,7 @@ brewbystate + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Merge datasets
-Number 2
+### Number 2 - Merge datasets
 ```{r}
 #merge data sets on Brewery_id
 names(breweries)[1] <- "Brewery_id"
@@ -73,8 +71,7 @@ tail(df1)
 ```
 
 
-### How many NAs
-Number 3
+### Number 3 - How many NAs and where they are
 ```{r}
 #number of NAs in each data set
 Beers_NAs <- sum(is.na(beers))
@@ -129,8 +126,7 @@ NAplots
 ```
 
 
-### Median ABV by State
-Number 4
+### Number 4 - Median ABV by State
 ```{r}
 ABV_Values <- df1 %>% group_by(State) %>%
   summarize(medianABV = median(ABV, na.rm = T)) %>%
@@ -144,7 +140,7 @@ ABV_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Median IBU by State
+### Number 4 - Median IBU by State
 ```{r}
 IBU_Values <- df1 %>% group_by(State) %>%
   summarize(medianIBU = median(IBU, na.rm = T)) %>%
@@ -158,9 +154,8 @@ IBU_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Maximum ABV and IBU
-#### Number 5
-##### Colorado has the highest ABV beer and Oregon has the highest IBU beer
+### Number 5 - Maximum ABV and IBU
+#### Colorado has the highest ABV beer and Oregon has the highest IBU beer
 ```{r}
 #make data frames with top 5 
 df2 <- df1[order(df1$ABV,decreasing = T),]
@@ -169,7 +164,7 @@ df3 <- df1[order(df1$IBU,decreasing = T),]
 df3 <- df3[c(1:5),c(5,10)]
 ```
 
-### Top 5 States with Highest IBU
+### Number 5 - Top 5 States with Highest IBU
 ```{r}
 #plot the top 5 states for IBU
 ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + 
@@ -181,7 +176,7 @@ ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) +
   ylab("IBU (International Bitterness Units)")
 ```
 
-### Top 5 States with Highest ABV
+### Number 5 - Top 5 States with Highest ABV
 ```{r}
 #plot the top states for ABV
 ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + 
@@ -194,9 +189,8 @@ ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) +
 ```
 
 
-### Distribution of ABV
-#### Number 6
-#####  The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.
+### Number 6 - Distribution of ABV
+#### The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.
 ```{r}
 #Summary stats of ABV
 summary(df1$ABV)
@@ -222,9 +216,8 @@ ABV_vizz + geom_density(fill = "#377eb8", alpha=0.6) +
 ```
 
 
-### Relationship between ABV and IBU
-#### Number 7
-##### There appears to be a positive relationship between ABV and IBU. As the ABV increases the IBU also tends to increase. We also notice that a majority of the data points are at 0.05 ABV and 35 IBU
+### Number 7 - Relationship between ABV and IBU
+#### There is evidence of a positive relationship between ABV and IBU. We also notice that a majority of the data points are at 0.05 ABV and 35 IBU
 ```{r}
 ggplot(df1, aes(x=ABV, y=IBU)) +
   geom_point() +
@@ -234,8 +227,7 @@ ggplot(df1, aes(x=ABV, y=IBU)) +
 ```
 
 
-### KNN Model
-#### Number 8
+### Number 8 - KNN Model
 ```{r}
 #Make new column with ALE, IPA, or Other as identifier
 df1$Type = ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
@@ -266,10 +258,10 @@ classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
 confusionMatrix(table(classifications1,dfTrain$Type))
 ```
 
-### Loop for many k and the average of many training / test partition
+### Number 8 - Loop for many k and the average of many training / test partition
 ```{r}
 iterations = 100
-numks = 100
+numks = 50
 
 masterAcc = matrix(nrow = iterations, ncol = numks)
   
@@ -279,9 +271,11 @@ accs = data.frame(accuracy = numeric(100), k = numeric(100))
 trainIndices = sample(1:dim(aleIPA)[1],round(splitPerc * dim(aleIPA)[1]))
 train = aleIPA[trainIndices,]
 test = aleIPA[-trainIndices,]
+train = na.omit(train)
+test = na.omit(test)
 for(i in 1:numks)
 {
-  classifications = knn(train[,c(1,3)],test[,c(1,3)],train$Type, prob = TRUE, k = i)
+  classifications = knn(train[,c(4,5)],test[,c(4,5)],train$Type, prob = TRUE, k = i)
   table(classifications,test$Type)
   CM = confusionMatrix(table(classifications,test$Type))
   masterAcc[j,i] = CM$overall[1]
@@ -294,6 +288,15 @@ MeanAcc = colMeans(masterAcc)
 plot(seq(1,numks,1),MeanAcc, type = "l", xlab = "k", ylab = "Mean Accuracy", main = "Mean Accuracy of k Values")
 ```
 
+### Number 8 - KNN model using best k value
+```{r}
+classifications4 <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 6, prob = TRUE)
+table(dfTest$Type,classifications4)
+confusionMatrix(table(dfTest$Type,classifications4))
+```
+
+
+### Test models using ABV & IBU individually and together
 ```{r}
 #knn internal model for ABV and IBU
 classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
@@ -309,7 +312,9 @@ confusionMatrix(table(classifications3,dfTrain$Type))
 ```
 
 
+### Number 9 - Find any interesting relationships in the data
 ```{r}
+# make new column with beer identifiers and make into a factor
 df1$New <- ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
   ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA",
          ifelse(grepl("\\bWheat\\b", df1$Style, ignore.case = T), "Wheat",
@@ -330,6 +335,7 @@ ggplot(df1, aes(x=ABV, y=IBU, color=New)) +
   geom_jitter() +
   geom_smooth(color="black") +
   ggtitle("Relationship Between ABV vs IBU") +
+  labs(color="Type of Beer") +
   facet_wrap(~New)
 ```
 
@@ -342,7 +348,6 @@ p1 <- ggplot(df1, aes(x=New, y=ABV, fill=New)) +
 p1
 ```
 
-
 ```{r}
 p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
   geom_boxplot() +
@@ -352,10 +357,6 @@ p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
 p2
 ```
 
-```{r}
-ABV_IBU <- plot_grid(p1,p2, labels = c("A","B"), nrow = 2)
-ABV_IBU
-```
 
 ### Median ABV and IBU by State
 ```{r}
@@ -383,19 +384,23 @@ map.df1 <- map.df1[order(map.df1$order),]
 
 ```{r}
 #ABV plot
-ggplot(map.df1, aes(x=long,y=lat,group=group))+
-  geom_polygon(aes(fill=medianABV))+
-  geom_path()+ 
-  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median ABV by State")+
+ggplot(map.df1, aes(x=long,y=lat,group=group)) +
+  geom_polygon(aes(fill=medianABV)) +
+  geom_path() + 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Median ABV by State") +
+  labs(fill="Median ABV") +
   coord_map()
 ```
 
 ```{r}
 #IBU plot
-ggplot(map.df1, aes(x=long,y=lat,group=group))+
-  geom_polygon(aes(fill=medianIBU))+
-  geom_path()+ 
-  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Median IBU by State")+
+ggplot(map.df1, aes(x=long,y=lat,group=group)) +
+  geom_polygon(aes(fill=medianIBU)) +
+  geom_path() + 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Median IBU by State") +
+  labs(fill="Median IBU") +
   coord_map()
 ```
 
