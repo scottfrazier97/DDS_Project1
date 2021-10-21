@@ -1,0 +1,8 @@
+"0","#plot the top states for ABV"
+"0","ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + "
+"0","  geom_bar(stat = ""identity"", fill= ""#377eb8"") +"
+"0","  ylim(0,0.15) +"
+"0","  ggtitle(""Top 5 States ABV"") +"
+"0","  xlab(""State"") +"
+"0","  geom_text(aes(label=ABV), vjust=-1) +"
+"0","  ylab(""ABV (Alcohol by Volume)"")"

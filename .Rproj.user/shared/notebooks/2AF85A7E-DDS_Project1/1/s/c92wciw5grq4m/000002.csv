@@ -1,0 +1,8 @@
+"0","#plot the top 5 states for IBU"
+"0","ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + "
+"0","  geom_bar(stat = ""identity"", fill = ""#4daf4a"") +"
+"0","  ylim(0,150) +"
+"0","  ggtitle(""Top 5 States IBU"") +"
+"0","  xlab(""State"") +"
+"0","  geom_text(aes(label=IBU), vjust=-1) +"
+"0","  ylab(""IBU (International Bitterness Units)"")"

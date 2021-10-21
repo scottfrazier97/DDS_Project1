@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"ggplot(NA.df1, aes(x = Measure, y = Value))","line_number":0}],"message":"Error in ggplot(NA.df1, aes(x = Measure, y = Value)) : \n  object 'NA.df1' not found\n"}

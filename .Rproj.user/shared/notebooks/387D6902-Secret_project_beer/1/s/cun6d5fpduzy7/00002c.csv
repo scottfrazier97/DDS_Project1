@@ -1,0 +1,8 @@
+"0","ggplot(NA.df1, aes(x=Measure, y=Value)) +
+  geom_bar(stat = ""identity"",fill=""#e41a1c"") +
+  ggtitle(""Number of NAs for ABV and IBU"") +
+  ylab(""Number of NAs"")
+"
+"2","Error in ggplot(NA.df1, aes(x = Measure, y = Value)) : 
+  object 'NA.df1' not found
+"

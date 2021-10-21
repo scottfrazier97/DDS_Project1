@@ -1,0 +1,5 @@
+"0","#choose file
+beers = read.csv(file.choose(), header = T)
+"
+"2","Error in file.choose() : file choice cancelled
+"
