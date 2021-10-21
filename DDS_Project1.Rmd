@@ -1,18 +1,21 @@
 ---
 title: "Budweiser Case Study"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
 author: "Kevin Boyd & Scott Frazier"
 date: "10/6/2021"
-output: html_document
 ---
-
+  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Budweiser Case Study
+# Introduction
+The purpose of this project was to go through the entire EDA process to identify any errors, and recognize any patterns which may have been present in the data given to us. The remaining bulk of our project consisted of creating insights as a result of our EDA as if we were given a list of questions by the CEO of Budweiser.
 
-
-### Load Libraries
+# Load Libraries
 ```{r, message=F}
 library(tidyverse)
 library(RColorBrewer)
@@ -26,14 +29,14 @@ library(mapproj)
 ```
 
 
-### Load in the data
+# Load in the data
 ```{r}
 beers <- read.csv("beers.csv", header = T)
 breweries <- read.csv("breweries.csv", header = T)
 ```
 
 
-### Look at the data
+# Look at the data
 ```{r}
 str(beers)
 str(breweries)
@@ -42,7 +45,7 @@ head(breweries)
 ```
 
 
-### Number 1 - How many breweries in each state?
+# Number 1 - How many breweries in each state?
 ```{r}
 #ordered plot
 brewbystate <- breweries %>%
@@ -58,7 +61,7 @@ brewbystate + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Number 2 - Merge datasets
+# Number 2 - Merge datasets
 ```{r}
 #merge data sets on Brewery_id
 names(breweries)[1] <- "Brewery_id"
@@ -71,13 +74,13 @@ tail(df1)
 ```
 
 
-### Number 3 - How many NAs and where they are
+# Number 3 - How many NAs and where they are
 ```{r}
 #number of NAs in each data set
 Beers_NAs <- sum(is.na(beers))
 Brewery_NAs <- sum(is.na(breweries))
 NA.df <- data.frame(Measure = c("Beers Data", "Breweries Data"), 
-                                Value = c(Beers_NAs,Brewery_NAs))
+                    Value = c(Beers_NAs,Brewery_NAs))
 NA.dataset <- ggplot(NA.df, aes(x=Measure, y=Value)) +
   geom_bar(stat = "identity", fill = "red3") +
   ggtitle("Missing Data in each Dataset") +
@@ -106,7 +109,7 @@ NA.df2 <- data.frame(Measure = c("ABV","ABV"),
                      Value = c(ABV_NAs,(DataLength-ABV_NAs)))
 
 bp1 <- ggplot(NA.df2, aes(x="", y=Value, fill=Data)) +
-geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing ABV Data")
+  geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing ABV Data")
 pie1 <- bp1 + coord_polar("y", start=0)
 pie1
 
@@ -116,7 +119,7 @@ NA.df3 <- data.frame(Measure = c("IBU","IBU"),
                      Value = c(IBU_NAs,(DataLength - IBU_NAs)))
 
 bp2 <- ggplot(NA.df3, aes(x="", y=Value, fill=Data)) +
-geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing IBU Data")
+  geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Missing IBU Data")
 pie2 <- bp2 + coord_polar("y", start=0)
 pie2
 
@@ -126,7 +129,7 @@ NAplots
 ```
 
 
-### Number 4 - Median ABV by State
+# Number 4a - Median ABV by State
 ```{r}
 ABV_Values <- df1 %>% group_by(State) %>%
   summarize(medianABV = median(ABV, na.rm = T)) %>%
@@ -140,7 +143,7 @@ ABV_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Number 4 - Median IBU by State
+# Number 4b - Median IBU by State
 ```{r}
 IBU_Values <- df1 %>% group_by(State) %>%
   summarize(medianIBU = median(IBU, na.rm = T)) %>%
@@ -154,8 +157,8 @@ IBU_Values + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-### Number 5 - Maximum ABV and IBU
-#### Colorado has the highest ABV beer and Oregon has the highest IBU beer
+# Number 5a - Maximum ABV and IBU
+**Colorado has the highest ABV beer and Oregon has the highest IBU beer**
 ```{r}
 #make data frames with top 5 
 df2 <- df1[order(df1$ABV,decreasing = T),]
@@ -164,7 +167,7 @@ df3 <- df1[order(df1$IBU,decreasing = T),]
 df3 <- df3[c(1:5),c(5,10)]
 ```
 
-### Number 5 - Top 5 States with Highest IBU
+# Number 5b - Top 5 States with Highest IBU
 ```{r}
 #plot the top 5 states for IBU
 ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + 
@@ -176,7 +179,7 @@ ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) +
   ylab("IBU (International Bitterness Units)")
 ```
 
-### Number 5 - Top 5 States with Highest ABV
+# Number 5c - Top 5 States with Highest ABV
 ```{r}
 #plot the top states for ABV
 ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + 
@@ -189,8 +192,8 @@ ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) +
 ```
 
 
-### Number 6 - Distribution of ABV
-#### The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.
+# Number 6 - Distribution of ABV
+**The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.**
 ```{r}
 #Summary stats of ABV
 summary(df1$ABV)
@@ -216,8 +219,8 @@ ABV_vizz + geom_density(fill = "#377eb8", alpha=0.6) +
 ```
 
 
-### Number 7 - Relationship between ABV and IBU
-#### There is evidence of a positive relationship between ABV and IBU. We also notice that a majority of the data points are at 0.05 ABV and 35 IBU
+# Number 7 - Relationship between ABV and IBU
+**There is evidence of a positive relationship between ABV and IBU. We also notice that a majority of the data points are at 0.05 ABV and 35 IBU**
 ```{r}
 ggplot(df1, aes(x=ABV, y=IBU)) +
   geom_point() +
@@ -227,11 +230,11 @@ ggplot(df1, aes(x=ABV, y=IBU)) +
 ```
 
 
-### Number 8 - KNN Model
+# Number 8a - KNN Model
 ```{r}
 #Make new column with ALE, IPA, or Other as identifier
 df1$Type = ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
-  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA", "Other"))
+                  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA", "Other"))
 head(df1)
 
 #Make new data frame with only Ale beers
@@ -249,7 +252,7 @@ dfTrain <- na.omit(dfTrain)
 dfTest <- na.omit(dfTest)
 
 #knn model
-classifications <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 5, prob = TRUE)
+classifications <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 10, prob = TRUE)
 table(dfTest$Type,classifications)
 confusionMatrix(table(dfTest$Type,classifications))
 
@@ -258,29 +261,29 @@ classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
 confusionMatrix(table(classifications1,dfTrain$Type))
 ```
 
-### Number 8 - Loop for many k and the average of many training / test partition
+# Number 8b - Loop for many k and the average of many training / test partition
 ```{r}
 iterations = 100
 numks = 50
 
 masterAcc = matrix(nrow = iterations, ncol = numks)
-  
+
 for(j in 1:iterations)
 {
-accs = data.frame(accuracy = numeric(100), k = numeric(100))
-trainIndices = sample(1:dim(aleIPA)[1],round(splitPerc * dim(aleIPA)[1]))
-train = aleIPA[trainIndices,]
-test = aleIPA[-trainIndices,]
-train = na.omit(train)
-test = na.omit(test)
-for(i in 1:numks)
-{
-  classifications = knn(train[,c(4,5)],test[,c(4,5)],train$Type, prob = TRUE, k = i)
-  table(classifications,test$Type)
-  CM = confusionMatrix(table(classifications,test$Type))
-  masterAcc[j,i] = CM$overall[1]
-}
-
+  accs = data.frame(accuracy = numeric(100), k = numeric(100))
+  trainIndices = sample(1:dim(aleIPA)[1],round(splitPerc * dim(aleIPA)[1]))
+  train = aleIPA[trainIndices,]
+  test = aleIPA[-trainIndices,]
+  train = na.omit(train)
+  test = na.omit(test)
+  for(i in 1:numks)
+  {
+    classifications = knn(train[,c(4,5)],test[,c(4,5)],train$Type, prob = TRUE, k = i)
+    table(classifications,test$Type)
+    CM = confusionMatrix(table(classifications,test$Type))
+    masterAcc[j,i] = CM$overall[1]
+  }
+  
 }
 
 MeanAcc = colMeans(masterAcc)
@@ -288,7 +291,7 @@ MeanAcc = colMeans(masterAcc)
 plot(seq(1,numks,1),MeanAcc, type = "l", xlab = "k", ylab = "Mean Accuracy", main = "Mean Accuracy of k Values")
 ```
 
-### Number 8 - KNN model using best k value
+# Number 8c - KNN model using best k value
 ```{r}
 classifications4 <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 6, prob = TRUE)
 table(dfTest$Type,classifications4)
@@ -296,7 +299,7 @@ confusionMatrix(table(dfTest$Type,classifications4))
 ```
 
 
-### Test models using ABV & IBU individually and together
+# Number 8d - Test models using ABV & IBU individually and together
 ```{r}
 #knn internal model for ABV and IBU
 classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
@@ -312,18 +315,18 @@ confusionMatrix(table(classifications3,dfTrain$Type))
 ```
 
 
-### Number 9 - Find any interesting relationships in the data
+# Number 9a - Find any interesting relationships in the data
 ```{r}
 # make new column with beer identifiers and make into a factor
 df1$New <- ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
-  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA",
-         ifelse(grepl("\\bWheat\\b", df1$Style, ignore.case = T), "Wheat",
-                ifelse(grepl("\\bAmber\\b", df1$Style, ignore.case = T), "Amber",
-                       ifelse(grepl("\\bStout\\b", df1$ Style, ignore.case = T), "Stout",
-                              ifelse(grepl("\\bLager\\b", df1$Style, ignore.case = T), "Lager",
-                                     ifelse(grepl("\\bPorter\\b", df1$Style, ignore.case = T), "Porter",
-                                            ifelse(grepl("\\bPilsner\\b", df1$Style, ignore.case = T), "Pilsner",
-                                                   "Other"))))))))
+                  ifelse(grepl("\\bipa\\b", df1$Style, ignore.case = T), "IPA",
+                         ifelse(grepl("\\bWheat\\b", df1$Style, ignore.case = T), "Wheat",
+                                ifelse(grepl("\\bAmber\\b", df1$Style, ignore.case = T), "Amber",
+                                       ifelse(grepl("\\bStout\\b", df1$ Style, ignore.case = T), "Stout",
+                                              ifelse(grepl("\\bLager\\b", df1$Style, ignore.case = T), "Lager",
+                                                     ifelse(grepl("\\bPorter\\b", df1$Style, ignore.case = T), "Porter",
+                                                            ifelse(grepl("\\bPilsner\\b", df1$Style, ignore.case = T), "Pilsner",
+                                                                   "Other"))))))))
 head(df1)
 df1$New <- as.factor(df1$New)
 str(df1)
@@ -358,7 +361,7 @@ p2
 ```
 
 
-### Median ABV and IBU by State
+# Number 9b - Median ABV and IBU by State
 ```{r}
 #make the data frame to plot
 df3.ABV <- df1 %>% group_by(State) %>%
@@ -403,5 +406,4 @@ ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   labs(fill="Median IBU") +
   coord_map()
 ```
-
 
