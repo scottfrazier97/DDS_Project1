@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introduction
-The purpose of this project was to go through the entire EDA process to identify any errors, and recognize any patterns which may have been present in the data given to us. The remaining bulk of our project consisted of creating insights as a result of our EDA as if we were given a list of questions by the CEO of Budweiser.
+Our goal was to perform an EDA by identifying errors and recognizing patterns that are present in the beers and brewries datasets given to us by Budweiser. Much of the work consisted of creating visual aids to show insights from the data. We addressed the relationship between alcohol content and the bitterness using multiple plots and methods. We also utilized a k-NN model to address the relationship between ALE and IPA. As a result this EDA shows how some of the most important components of beer relate to each other.
 
 # Load Libraries
 ```{r, message=F}
@@ -45,9 +45,9 @@ head(breweries)
 ```
 
 
-# Number 1 - How many breweries in each state?
+# Number 1 - Number of Breweries in each State
 ```{r}
-#ordered plot
+#ordered plot showing counts of breweries per state
 brewbystate <- breweries %>%
   group_by(State) %>%
   summarise(count = n()) %>%
@@ -61,7 +61,7 @@ brewbystate + theme(axis.text.x=element_text(vjust=0.5))
 ```
 
 
-# Number 2 - Merge datasets
+# Number 2 - Merge the Datasets
 ```{r}
 #merge data sets on Brewery_id
 names(breweries)[1] <- "Brewery_id"
@@ -74,7 +74,7 @@ tail(df1)
 ```
 
 
-# Number 3 - How many NAs and where they are
+# Number 3 - Missing Values
 ```{r}
 #number of NAs in each data set
 Beers_NAs <- sum(is.na(beers))
@@ -131,6 +131,7 @@ NAplots
 
 # Number 4a - Median ABV by State
 ```{r}
+#plot showing the median ABV value per state
 ABV_Values <- df1 %>% group_by(State) %>%
   summarize(medianABV = median(ABV, na.rm = T)) %>%
   ggplot(aes(x=reorder(State,(-medianABV)), y=medianABV)) +
@@ -145,6 +146,7 @@ ABV_Values + theme(axis.text.x=element_text(vjust=0.5))
 
 # Number 4b - Median IBU by State
 ```{r}
+#plot showing the median IBU value per state
 IBU_Values <- df1 %>% group_by(State) %>%
   summarize(medianIBU = median(IBU, na.rm = T)) %>%
   ggplot(aes(x=reorder(State,(-medianIBU)), y=medianIBU)) +
@@ -158,9 +160,8 @@ IBU_Values + theme(axis.text.x=element_text(vjust=0.5))
 
 
 # Number 5a - Maximum ABV and IBU
-**Colorado has the highest ABV beer and Oregon has the highest IBU beer**
 ```{r}
-#make data frames with top 5 
+#make data frames with top 5 ABV and IBU values
 df2 <- df1[order(df1$ABV,decreasing = T),]
 df2 <- df2[c(1,2,3,5,6),c(4,10)]
 df3 <- df1[order(df1$IBU,decreasing = T),]
@@ -168,6 +169,7 @@ df3 <- df3[c(1:5),c(5,10)]
 ```
 
 # Number 5b - Top 5 States with Highest IBU
+**Oregon has the highest IBU beer**
 ```{r}
 #plot the top 5 states for IBU
 ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) + 
@@ -180,6 +182,7 @@ ggplot(df3, aes(x = reorder(State, -IBU), y = IBU)) +
 ```
 
 # Number 5c - Top 5 States with Highest ABV
+**Colorado has the highest ABV beer**
 ```{r}
 #plot the top states for ABV
 ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) + 
@@ -193,20 +196,20 @@ ggplot(df2, aes(x = reorder(State, -ABV), y = ABV)) +
 
 
 # Number 6 - Distribution of ABV
-**The distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it right skewed.**
+**The evidence suggests the distribution of ABV is right skewed with a median value of 0.056 with a mean of 0.0598. There are a number of values greater than 0.1 that make it appear to be right skewed.**
 ```{r}
 #Summary stats of ABV
 summary(df1$ABV)
 
-###Distributions
-#Histogram of ABV in df1 - looks decent
+#Distributions
+#Histogram of ABV in df1
 df1 %>% ggplot(aes(x=ABV)) + geom_histogram(fill = "#377eb8") + ggtitle("Different ABV Values of Beer") + labs(x="ABV (Alcohol by Volume)", y="Frequency")
 
-#boxplot - might need some work
+#boxplot
 df1 %>% ggplot(aes(x=ABV)) + geom_boxplot(fill = "#377eb8") + ggtitle("Different ABV Values of Beer") + labs(x="ABV (Alcohol by Volume)", y="") + coord_flip()
 
 
-#geom_density - looks decent
+#geom_density
 ABV_vizz = ggplot(df1, aes(x = ABV))
 
 ABV_vizz + geom_density(fill = "#377eb8", alpha=0.6) +
@@ -230,7 +233,7 @@ ggplot(df1, aes(x=ABV, y=IBU)) +
 ```
 
 
-# Number 8a - KNN Model
+# Number 8a - k-NN Model
 ```{r}
 #Make new column with ALE, IPA, or Other as identifier
 df1$Type = ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
@@ -255,14 +258,11 @@ dfTest <- na.omit(dfTest)
 classifications <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 10, prob = TRUE)
 table(dfTest$Type,classifications)
 confusionMatrix(table(dfTest$Type,classifications))
-
-#knn internal model
-classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
-confusionMatrix(table(classifications1,dfTrain$Type))
 ```
 
-# Number 8b - Loop for many k and the average of many training / test partition
+# Number 8b - Find Best k Value
 ```{r}
+#Loop for many k and the average of many training / test partition
 iterations = 100
 numks = 50
 
@@ -291,15 +291,16 @@ MeanAcc = colMeans(masterAcc)
 plot(seq(1,numks,1),MeanAcc, type = "l", xlab = "k", ylab = "Mean Accuracy", main = "Mean Accuracy of k Values")
 ```
 
-# Number 8c - KNN model using best k value
+# Number 8c - k-NN Model with Optimized k
 ```{r}
+#k-NN model using best value of k 
 classifications4 <- knn(dfTrain[,4:5], dfTest[,4:5], dfTrain$Type, k = 6, prob = TRUE)
 table(dfTest$Type,classifications4)
 confusionMatrix(table(dfTest$Type,classifications4))
 ```
 
 
-# Number 8d - Test models using ABV & IBU individually and together
+# Number 8d - Test ABV & IBU Contribution to Model Accuracy
 ```{r}
 #knn internal model for ABV and IBU
 classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
@@ -315,7 +316,7 @@ confusionMatrix(table(classifications3,dfTrain$Type))
 ```
 
 
-# Number 9a - Find any interesting relationships in the data
+# Number 9a - Interesting Relationships
 ```{r}
 # make new column with beer identifiers and make into a factor
 df1$New <- ifelse(grepl("\\bale\\b", df1$Style, ignore.case = T), "ALE",
@@ -333,6 +334,7 @@ str(df1)
 ```
 
 ```{r}
+#plot each beer ABV and IBU individually
 ggplot(df1, aes(x=ABV, y=IBU, color=New)) +
   geom_point() +
   geom_jitter() +
@@ -343,6 +345,7 @@ ggplot(df1, aes(x=ABV, y=IBU, color=New)) +
 ```
 
 ```{r}
+#boxplot for ABV of each beer
 p1 <- ggplot(df1, aes(x=New, y=ABV, fill=New)) +
   geom_boxplot() +
   ggtitle("Relationship Between Kind of Beer and ABV") +
@@ -352,6 +355,7 @@ p1
 ```
 
 ```{r}
+#boxplot for IBU of each beer
 p2 <- ggplot(df1, aes(x=New, y=IBU, fill=New)) +
   geom_boxplot() +
   ggtitle("Relationship Between Kind of Beer and IBU") +
@@ -380,13 +384,14 @@ df6 <- cbind(df4,df5)
 df6$region <- tolower(df6$State)
 df7 <- df6[,-c(1,4,5)]
 
+#make map df
 states <- map_data("state")
 map.df1 <- merge(states,df7, by="region", all.x=T)
 map.df1 <- map.df1[order(map.df1$order),]
 ```
 
 ```{r}
-#ABV plot
+#ABV heat plot
 ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   geom_polygon(aes(fill=medianABV)) +
   geom_path() + 
@@ -397,7 +402,7 @@ ggplot(map.df1, aes(x=long,y=lat,group=group)) +
 ```
 
 ```{r}
-#IBU plot
+#IBU heat plot
 ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   geom_polygon(aes(fill=medianIBU)) +
   geom_path() + 
