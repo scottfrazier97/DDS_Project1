@@ -45,7 +45,7 @@ head(breweries)
 ```
 
 
-# Number 1 - Number of Breweries in each State
+# Number 1 - Number of Breweries in Each State
 ```{r}
 #ordered plot showing counts of breweries per state
 brewbystate <- breweries %>%
