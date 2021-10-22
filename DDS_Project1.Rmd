@@ -302,6 +302,7 @@ confusionMatrix(table(dfTest$Type,classifications4))
 
 
 # Number 8d - Test ABV & IBU Contribution to Model Accuracy
+**Both ABV and IBU allowed high accuracy in our model predicting if a beer is considered an IPA, but IBU was the best measure in the model.**
 ```{r}
 #knn internal model for ABV and IBU
 classifications1 <- knn.cv(dfTrain[,4:5],dfTrain$Type, k = 10)
