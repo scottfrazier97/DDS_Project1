@@ -1,7 +1,5 @@
 # DDS - Project 1 - Budweiser EDA
 
-The purpose of this project was to go through the entire EDA process to identify any errors, and recognize any patterns which may have been present in the data given to us. The remaining bulk of our project consisted of creating insights as a result of our EDA as if we were given a list of questions by the CEO of Budweiser.
-
-In the course of our EDA, we created a k-NN classification model to assist in predicting whether or not the beers listed within our data were an IPA, or an Ale based on the International Bitterness Unit (IBU) and Alcohol by Volume (ABV) values. We also created several heatmaps of the United States with regards to IBU and ABV to help us visualize the correlation, if one existed, between those two variables. 
+Our goal was to perform an EDA by identifying errors and recognizing patterns that are present in the beers and breweries data sets given to us by Budweiser. Much of the work consisted of creating visual aids to show insights from the data. We addressed the relationship between alcohol content and the bitterness using multiple plots and methods. We also utilized a k-NN model to address the relationship between ALE and IPA. As a result this EDA shows how some of the most important components of beer relate to each other.
 
 Based on our visualizations and insights, we concluded that there does appear to be evidence of a slightly positive relationship between IBU and ABV.
