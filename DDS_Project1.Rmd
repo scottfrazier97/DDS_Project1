@@ -414,3 +414,5 @@ ggplot(map.df1, aes(x=long,y=lat,group=group)) +
   coord_map()
 ```
 
+# Conclusion
+**Based on our visualizations and insights, we concluded that there does appear to be evidence of a positive relationship between ABV and IBU. We were able to accuratly identify if a beer was an ale or an IPA based specifically on those metrics. We also observed similar distributions of ABV and IBU between different subgroups of beer.**
